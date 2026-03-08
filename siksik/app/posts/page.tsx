@@ -67,6 +67,20 @@ export default function PostsPage() {
     setMessage("保存できました");
     fetchPosts();
   };
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      setMessage(`削除エラー: ${error.message}`);
+      return;
+    }
+
+    setMessage("削除しました");
+    fetchPosts();
+  };
 
   useEffect(() => {
     fetchPosts();
@@ -74,7 +88,7 @@ export default function PostsPage() {
 
   return (
     <main style={{ padding: "24px" }}>
-      <h1>Posts</h1>
+      <h1>本一覧</h1>
 
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
         <input
@@ -90,7 +104,12 @@ export default function PostsPage() {
 
       <ul>
         {posts.map((post) => (
-          <li key={post.id}>{post.title}</li>
+          <li key={post.id}>
+            {post.title}
+            <button onClick={() => handleDelete(post.id)}>
+              削除
+            </button>
+          </li>
         ))}
       </ul>
     </main>
