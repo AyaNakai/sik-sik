@@ -16,6 +16,9 @@ export default function PostsPage() {
   const [title, setTitle] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [message, setMessage] = useState("");
+  // const [editTitle, setEditTitle] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
 
   const fetchPosts = async () => {
     const {
@@ -81,6 +84,22 @@ export default function PostsPage() {
     setMessage("削除しました");
     fetchPosts();
   };
+  const handleUpdate = async (id: string, newTitle: string) => {
+    const { error } = await supabase
+      .from("posts")
+      .update({ title: newTitle })
+      .eq("id", id);
+
+    if (error) {
+      setMessage(`更新エラー: ${error.message}`);
+      return;
+    }
+
+    setMessage("更新しました");
+    setEditingId(null);
+    setEditTitle("");
+    fetchPosts();
+  };
 
   useEffect(() => {
     fetchPosts();
@@ -105,7 +124,40 @@ export default function PostsPage() {
       <ul>
         {posts.map((post) => (
           <li key={post.id}>
-            {post.title}
+            {editingId === post.id ? (
+              <>
+                <input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
+                <button
+                  onClick={() => handleUpdate(post.id, editTitle)}
+                >
+                  更新
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingId(null);
+                    setEditTitle("");
+                  }}
+                >
+                  キャンセル
+                </button>
+              </>
+            ) : (
+              <>
+                {post.title}
+                <button
+                  onClick={() => {
+                    setEditingId(post.id);
+                    setEditTitle(post.title);
+                  }}
+                >
+                  編集
+                </button>
+              </>
+            )}
+
             <button onClick={() => handleDelete(post.id)}>
               削除
             </button>
